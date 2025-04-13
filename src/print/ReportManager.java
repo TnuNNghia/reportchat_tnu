@@ -11,6 +11,7 @@ import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.view.JasperViewer;
 import print_model.ParameterReportMuon;
+import print_model.ParameterReportTra;
 //import print.model.ParameterReportInvoice;
 //import print.model.ParameterReportMuon;
 //import print.model.ParameterReportPayment;
@@ -21,7 +22,7 @@ public class ReportManager {
     private static ReportManager instance;
 
     private JasperReport reportPay;
-    private JasperReport reportInvoice;
+    private JasperReport reportTra;
     private JasperReport reportMuon; // 💡 Thêm báo cáo phiếu mượn
 
     public static ReportManager getInstance() {
@@ -39,10 +40,10 @@ public class ReportManager {
         // Load tất cả báo cáo
 //        reportPay = JasperCompileManager.compileReport(getClass()
 //                .getResourceAsStream("/print/report_pay.jrxml"));
-//        reportInvoice = JasperCompileManager.compileReport(getClass()
-//                .getResourceAsStream("/print/report_invoice.jrxml"));
+        reportTra = JasperCompileManager.compileReport(getClass()
+                .getResourceAsStream("/print/report_phieutra.jrxml"));
         reportMuon = JasperCompileManager.compileReport(
-                getClass().getResourceAsStream("/print/report_pay.jrxml")
+                getClass().getResourceAsStream("/print/report_phieumuon.jrxml")
         );
 
     }
@@ -88,13 +89,30 @@ public class ReportManager {
         para.put("hoten", data.getHoten());
         para.put("ngaymuon", data.getNgaymuon());
         para.put("hantra", data.getHantra());
-        para.put("trangthai",data.getTrangthai());
+        para.put("trangthai", data.getTrangthai());
 
         // Tạo datasource từ danh sách FieldReportMuon
         JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(data.getDanhSachPhieu());
 
         // In báo cáo
         JasperPrint print = JasperFillManager.fillReport(reportMuon, para, dataSource);
+        view(print);
+    }
+
+    public void printReportTra(ParameterReportTra data) throws JRException {
+        Map<String, Object> para = new HashMap<>();
+
+        // Truyền tham số vào báo cáo Jasper
+        para.put("maphieutra", data.getMaphieutra());
+        para.put("madocgia", data.getMadocgia());
+        para.put("hoten", data.getHoten());
+        para.put("ngaytra", data.getNgaytra());
+
+        // Tạo datasource từ danh sách FieldReportMuon
+        JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(data.getDanhSachPhieu());
+
+        // In báo cáo
+        JasperPrint print = JasperFillManager.fillReport(reportTra, para, dataSource);
         view(print);
     }
 

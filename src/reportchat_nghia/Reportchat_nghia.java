@@ -11,7 +11,7 @@ public class Reportchat_nghia {
 
     public static void main(String[] args) {
         try {
-            String reportPath = "D:\\MonHoc\\Do_an_tot_Nghiep\\Example\\reportchat_nghia\\src\\print\\report_pay.jrxml";
+            String reportPath = "D:\\MonHoc\\Do_an_tot_Nghiep\\Example\\reportchat_nghia\\src\\print\\report_phieumuon.jrxml";
             JasperReport report = JasperCompileManager.compileReport(reportPath);
 
             if (report != null) {

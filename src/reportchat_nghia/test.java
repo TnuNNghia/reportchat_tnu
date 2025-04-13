@@ -16,6 +16,8 @@ import java.sql.Date;
 import javax.swing.JOptionPane;
 import net.sf.jasperreports.engine.JRException;
 import print.ReportManager;
+import print_model.FieldReportTra;
+import print_model.ParameterReportTra;
 
 /**
  *
@@ -70,7 +72,49 @@ public class test extends javax.swing.JFrame {
             r2.close();
             p2.close();
 // Thêm Ngày Mượn và Hạn Trả vào trong constructor của ParameterReportMuon
-            param = new ParameterReportMuon(maphieu, madocgia,hoten, ngayMuon, hanTra,trangthai, ds);
+            param = new ParameterReportMuon(maphieu, madocgia, hoten, ngayMuon, hanTra, trangthai, ds);
+        }
+
+        r.close();
+        p.close();
+
+        return param;
+    }
+
+    public ParameterReportTra getDataPrintTra(String maphieutra) throws SQLException {
+        String sql = "SELECT  pt.MaPhieuTra, dg.MaDocGia, dg.HoTen,pt.NgayTra FROM  phieutra pt JOIN phieumuon pm ON pt.MaPhieuMuon = pm.MaPhieuMuon JOIN  docgia dg ON pm.MaDocGia = dg.MaDocGia WHERE pt.MaPhieuTra = ? ORDER BY pt.MaPhieuTra";
+        PreparedStatement p = DatabaseConnection.getInstance().getConnection().prepareStatement(sql);
+        p.setString(1, maphieutra);
+
+        ResultSet r = p.executeQuery();
+
+        ParameterReportTra param = null;
+
+        if (r.next()) {
+            String madocgia = r.getString("MaDocGia");
+            String hoten = r.getString("HoTen");
+            Date ngayTra = r.getDate("NgayTra");  // Thêm lấy Ngày Trả
+
+            // Lấy chi tiết phiếu trả
+            String sqlDetail = "SELECT MaPhieuTra, MaSach, TenSach, SoLuong, TinhTrangSach FROM chitiettra WHERE MaPhieuTra = ?";
+            PreparedStatement p2 = DatabaseConnection.getInstance().getConnection().prepareStatement(sqlDetail);
+            p2.setString(1, maphieutra);
+            ResultSet r2 = p2.executeQuery();
+
+            List<FieldReportTra> ds = new ArrayList<>();
+            while (r2.next()) {
+                String mpt = r2.getString("MaPhieuTra");
+                String ms = r2.getString("MaSach");
+                String ten = r2.getString("TenSach");
+                int soluong = r2.getInt("SoLuong");
+                String tinhtrangsach = r2.getString("TinhTrangSach");
+                ds.add(new FieldReportTra(mpt, ms, ten, soluong, tinhtrangsach));
+            }
+
+            r2.close();
+            p2.close();
+// Thêm Ngày Mượn và Hạn Trả vào trong constructor của ParameterReportMuon
+            param = new ParameterReportTra(maphieutra, madocgia, hoten, ngayTra, ds);
         }
 
         r.close();
@@ -86,6 +130,9 @@ public class test extends javax.swing.JFrame {
         btn_print = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         txt_maphieumuon = new javax.swing.JTextField();
+        btn_phieutra = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        txt_maphieutra = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -98,32 +145,50 @@ public class test extends javax.swing.JFrame {
 
         jLabel1.setText("Mã phiếu mượn");
 
+        btn_phieutra.setText("print1");
+        btn_phieutra.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_phieutraActionPerformed(evt);
+            }
+        });
+
+        jLabel2.setText("Mã phiếu trả");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGap(16, 16, 16)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(86, 86, 86)
                         .addComponent(jLabel1)
-                        .addGap(30, 30, 30)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txt_maphieumuon, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(136, 136, 136)
-                        .addComponent(btn_print)))
-                .addContainerGap(129, Short.MAX_VALUE))
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(txt_maphieutra, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btn_phieutra)
+                    .addComponent(btn_print))
+                .addContainerGap(133, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(78, Short.MAX_VALUE)
+                .addContainerGap(29, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(txt_maphieumuon, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(50, 50, 50)
-                .addComponent(btn_print)
-                .addGap(127, 127, 127))
+                    .addComponent(txt_maphieumuon, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btn_print))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btn_phieutra)
+                    .addComponent(jLabel2)
+                    .addComponent(txt_maphieutra, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(207, 207, 207))
         );
 
         pack();
@@ -133,7 +198,7 @@ public class test extends javax.swing.JFrame {
         String phieumuon = txt_maphieumuon.getText().trim();
 
         if (phieumuon.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Vui lòng nhập mã độc giả!");
+            JOptionPane.showMessageDialog(null, "Vui lòng nhập mã phiếu mượn!");
             return;
         }
 
@@ -154,6 +219,32 @@ public class test extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Lỗi khi in phiếu: " + ex.getMessage());
         }
     }//GEN-LAST:event_btn_printActionPerformed
+
+    private void btn_phieutraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_phieutraActionPerformed
+        String phieutra = txt_maphieutra.getText().trim();
+
+        if (phieutra.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Vui lòng nhập mã phiếu trả!");
+            return;
+        }
+
+        try {
+            // Gọi hàm có truyền tham số mã độc giả
+            ParameterReportTra data = getDataPrintTra(phieutra);
+
+            if (data == null) {
+                JOptionPane.showMessageDialog(null, "Không tìm thấy phiếu trả : " + phieutra);
+                return;
+            }
+
+            // In báo cáo thông qua ReportManager
+            ReportManager.getInstance().printReportTra(data);
+
+        } catch (SQLException | JRException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Lỗi khi in phiếu: " + ex.getMessage());
+        }
+    }//GEN-LAST:event_btn_phieutraActionPerformed
 
     /**
      * @param args the command line arguments
@@ -191,8 +282,11 @@ public class test extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btn_phieutra;
     private javax.swing.JButton btn_print;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JTextField txt_maphieumuon;
+    private javax.swing.JTextField txt_maphieutra;
     // End of variables declaration//GEN-END:variables
 }
